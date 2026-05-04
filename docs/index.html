@@ -26,7 +26,7 @@
   .container { max-width: 1440px; margin: 0 auto; padding: 32px 24px; }
 
   /* KPI 카드 */
-  .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 28px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
   .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
   .kpi-card.alert { border-color: rgba(249,115,22,0.5); background: rgba(249,115,22,0.06); }
   .kpi-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
@@ -88,7 +88,7 @@
 </header>
 <div class="container">
 
-  <!-- KPI 카드 6개 -->
+  <!-- KPI 카드 4개 -->
   <div class="kpi-row">
     <div class="kpi-card">
       <div class="kpi-label">2025 총 세션</div>
@@ -109,59 +109,6 @@
       <div class="kpi-label">2026 상담신청</div>
       <div class="kpi-value" style="color:var(--orange)">9</div>
       <div class="kpi-sub">1월~현재</div>
-    </div>
-    <div class="kpi-card alert">
-      <div class="kpi-label">2025 전환율 (CVR)</div>
-      <div class="kpi-value" style="color:var(--orange)">0.022%</div>
-      <div class="kpi-sub">53,842 세션 중 12건</div>
-    </div>
-    <div class="kpi-card alert">
-      <div class="kpi-label">2026 전환율 (CVR)</div>
-      <div class="kpi-value" style="color:var(--orange)">0.071%</div>
-      <div class="kpi-sub">12,661 세션 중 9건</div>
-    </div>
-  </div>
-
-  <!-- 퍼널 배너 -->
-  <div class="funnel-banner">
-    <div>
-      <h3>🔻 전환 갭 요약 (2025~2026 누적)</h3>
-    </div>
-    <div class="funnel-step">
-      <div class="funnel-num" style="color:var(--purple2)">66,503</div>
-      <div class="funnel-pct">총 세션 (방문)</div>
-    </div>
-    <div class="funnel-arrow">→</div>
-    <div class="funnel-step">
-      <div class="funnel-num" style="color:var(--orange)">21</div>
-      <div class="funnel-pct">상담신청 (전환)</div>
-    </div>
-    <div class="funnel-arrow">→</div>
-    <div class="funnel-step">
-      <div class="funnel-num" style="color:var(--neg)">
-        0.032%
-      </div>
-      <div class="funnel-pct">전환율 — 업계 평균 2~5% 대비 극히 낮음</div>
-    </div>
-  </div>
-
-  <!-- 세션 vs 상담신청 이중축 + CVR -->
-  <div class="charts-grid">
-    <div class="chart-card">
-      <h2 style="color:var(--purple2)">📊 월별 세션 vs 상담신청 (2025)</h2>
-      <div class="chart-wrap-tall"><canvas id="funnelChart25"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h2 style="color:var(--purple2)">📊 월별 세션 vs 상담신청 (2026)</h2>
-      <div class="chart-wrap-tall"><canvas id="funnelChart26"></canvas></div>
-    </div>
-  </div>
-
-  <!-- 전환율 트렌드 -->
-  <div class="chart-full">
-    <div class="chart-card">
-      <h2 style="color:var(--orange)">📉 월별 전환율(CVR) 추이 — 2025 vs 2026</h2>
-      <div class="chart-wrap"><canvas id="cvrChart"></canvas></div>
     </div>
   </div>
 
@@ -375,129 +322,6 @@ const cvr2025       = [0,0,0,0.003,0.013,0.135,0.271,0.06,0,0.095,0,0.051];
 const cvr2026       = [0.097,0.155,0.034,0.049,0,0,0,0,0,0,0,0];
 const aiSessions2025 = [0,0,0,0,8,6,24,24,32,16,23,10];
 const aiSessions2026 = [38,24,16,14,0,0,0,0,0,0,0,0];
-
-// 공통 이중축 옵션 생성
-function dualAxisChart(canvasId, sessionsData, consultData, year, sessColor, conColor) {
-  new Chart(document.getElementById(canvasId), {
-    data: {
-      labels: MONTHS,
-      datasets: [
-        {
-          type: 'bar',
-          label: `세션 (${year})`,
-          data: sessionsData,
-          backgroundColor: sessColor + '99',
-          borderColor: sessColor,
-          borderWidth: 1,
-          borderRadius: 4,
-          yAxisID: 'ySess',
-        },
-        {
-          type: 'line',
-          label: `상담신청 (${year})`,
-          data: consultData,
-          borderColor: '#F97316',
-          backgroundColor: 'rgba(249,115,22,0.15)',
-          borderWidth: 2.5,
-          pointRadius: 5,
-          pointBackgroundColor: '#F97316',
-          tension: 0.3,
-          yAxisID: 'yConsult',
-          fill: false,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { position: 'top', labels: { boxWidth: 12, padding: 14 } },
-        tooltip: { callbacks: {
-          label: ctx => {
-            if (ctx.datasetIndex === 0) return ` 세션: ${ctx.raw.toLocaleString()}회`;
-            return ` 상담신청: ${ctx.raw}건`;
-          }
-        }},
-      },
-      scales: {
-        ySess: {
-          type: 'linear', position: 'left',
-          grid: { color: '#2D2B45' },
-          ticks: { callback: v => v.toLocaleString(), color: sessColor },
-          title: { display: true, text: '세션 수', color: '#64748B', font: { size: 10 } },
-        },
-        yConsult: {
-          type: 'linear', position: 'right',
-          grid: { drawOnChartArea: false },
-          ticks: { stepSize: 1, color: '#F97316' },
-          min: 0,
-          title: { display: true, text: '상담신청', color: '#F97316', font: { size: 10 } },
-        },
-        x: { grid: { color: '#2D2B45' } },
-      },
-    },
-  });
-}
-
-dualAxisChart('funnelChart25', sessions2025, consult2025, '2025', '#9F7AEA', '#F97316');
-dualAxisChart('funnelChart26', sessions2026, consult2026, '2026', '#B794F4', '#F97316');
-
-// CVR 트렌드
-new Chart(document.getElementById('cvrChart'), {
-  type: 'line',
-  data: {
-    labels: MONTHS,
-    datasets: [
-      {
-        label: 'CVR 2025 (%)',
-        data: cvr2025,
-        borderColor: '#FBBF24',
-        backgroundColor: 'rgba(251,191,36,0.1)',
-        borderWidth: 2,
-        pointRadius: 5,
-        tension: 0.3,
-        fill: true,
-      },
-      {
-        label: 'CVR 2026 (%)',
-        data: cvr2026,
-        borderColor: '#F97316',
-        backgroundColor: 'rgba(249,115,22,0.1)',
-        borderWidth: 2,
-        pointRadius: 5,
-        tension: 0.3,
-        fill: true,
-      },
-    ],
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'top', labels: { boxWidth: 12, padding: 14 } },
-      tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toFixed(3)}%` } },
-      annotation: {
-        annotations: {
-          baseline: {
-            type: 'line', yMin: 0.1, yMax: 0.1,
-            borderColor: 'rgba(249,115,22,0.4)', borderWidth: 1,
-            borderDash: [6,4],
-            label: { content: '0.1% 기준선', enabled: true, position: 'end', color: '#F97316', font: { size: 10 } },
-          }
-        }
-      }
-    },
-    scales: {
-      x: { grid: { color: '#2D2B45' } },
-      y: {
-        grid: { color: '#2D2B45' }, beginAtZero: true,
-        ticks: { callback: v => v.toFixed(2) + '%' },
-        title: { display: true, text: '전환율 (%)', color: '#64748B', font: { size: 10 } },
-      },
-    },
-  },
-});
 
 // 세션 비교
 new Chart(document.getElementById('sessionChart'), {
